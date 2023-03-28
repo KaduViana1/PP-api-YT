@@ -13,7 +13,7 @@ videosRoutes.get('/get-videos', (req, res) => {
   videosRepository.getVideos(req, res);
 });
 
-videosRoutes.get('/search', (req, res) => {
+videosRoutes.get('/results', (req, res) => {
   videosRepository.searchVideos(req, res);
 });
 

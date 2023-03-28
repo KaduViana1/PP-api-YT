@@ -13,7 +13,7 @@ userRoutes.post('/log-in', (req, res) => {
   userRepository.login(req, res);
 });
 
-userRoutes.get('get-user', login, (req, res) => {
+userRoutes.get('/get-user', login, (req, res) => {
   userRepository.getUser(req, res);
 });
 

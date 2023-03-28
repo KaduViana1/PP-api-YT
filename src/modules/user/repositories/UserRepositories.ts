@@ -41,7 +41,7 @@ class UserRepository {
           }
 
           compare(password, results[0].password, (err, result) => {
-            if (error) {
+            if (err) {
               return res.status(400).json({ error: 'Autentication Error!' });
             }
             if (result) {
@@ -54,7 +54,6 @@ class UserRepository {
                 { expiresIn: '1d' }
               );
 
-              console.log(token);
               return res
                 .status(200)
                 .json({ token: token, message: 'Successfully Autenticated' });

@@ -32,7 +32,7 @@ class UserRepository {
                     return res.status(400).json({ error: 'Autentication Error!' });
                 }
                 (0, bcrypt_1.compare)(password, results[0].password, (err, result) => {
-                    if (error) {
+                    if (err) {
                         return res.status(400).json({ error: 'Autentication Error!' });
                     }
                     if (result) {
@@ -40,7 +40,6 @@ class UserRepository {
                             id: results[0].user_id,
                             email: results[0].email,
                         }, process.env.SECRET, { expiresIn: '1d' });
-                        console.log(token);
                         return res
                             .status(200)
                             .json({ token: token, message: 'Successfully Autenticated' });
@@ -48,6 +47,29 @@ class UserRepository {
                 });
             });
         });
+    }
+    getUser(req, res) {
+        const decode = (0, jsonwebtoken_1.verify)(req.headers.authorization, process.env.SECRET);
+        if (decode.email) {
+            mysql_1.pool.getConnection((error, conn) => {
+                conn.query('SELECT * FROM users WHERE email=?', [decode.email], (error, result, fields) => {
+                    conn.release();
+                    if (error) {
+                        return res.status(400).send({
+                            error: error,
+                            res: null,
+                        });
+                    }
+                    return res.status(201).send({
+                        user: {
+                            name: result[0].name,
+                            email: result[0].email,
+                            id: result[0].user_id,
+                        },
+                    });
+                });
+            });
+        }
     }
 }
 exports.UserRepository = UserRepository;
