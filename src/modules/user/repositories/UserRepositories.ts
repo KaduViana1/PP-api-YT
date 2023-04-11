@@ -3,11 +3,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { hash, compare } from 'bcrypt';
 import { sign, verify } from 'jsonwebtoken';
 import { Request, Response } from 'express';
+import { FieldInfo, MysqlError, PoolConnection } from 'mysql';
 
 class UserRepository {
   create(req: Request, res: Response) {
     const { name, email, password } = req.body;
-    pool.getConnection((err: any, connection: any) => {
+    pool.getConnection((err: MysqlError, connection: PoolConnection) => {
       hash(password, 10, (err, hash) => {
         if (err) {
           return res.status(500).json(err);
@@ -16,7 +17,11 @@ class UserRepository {
         connection.query(
           'INSERT INTO users (user_id, name, email, password) VALUES (?,?,?,?)',
           [uuidv4(), name, email, hash],
-          (error: any, result: any, fields: any) => {
+          (
+            error: MysqlError | null,
+            result: any,
+            fields: FieldInfo[] | undefined
+          ) => {
             connection.release();
             if (error) {
               return res.status(400).json(error);
@@ -30,11 +35,15 @@ class UserRepository {
 
   login(req: Request, res: Response) {
     const { name, email, password } = req.body;
-    pool.getConnection((err: any, connection: any) => {
+    pool.getConnection((err: MysqlError, connection: PoolConnection) => {
       connection.query(
         'SELECT * FROM users  WHERE email = ?',
         [email],
-        (error: any, results: any, fields: any) => {
+        (
+          error: MysqlError | null,
+          results: any,
+          fields: FieldInfo[] | undefined
+        ) => {
           connection.release();
           if (error) {
             return res.status(400).json({ error: 'Autentication Error!' });
@@ -51,7 +60,7 @@ class UserRepository {
                   email: results[0].email,
                 },
                 process.env.SECRET as string,
-                { expiresIn: '1d' }
+                { expiresIn: '30d' }
               );
 
               return res
@@ -64,7 +73,7 @@ class UserRepository {
     });
   }
 
-  getUser(req: any, res: any) {
+  getUser(req: any, res: Response) {
     const decode: any = verify(
       req.headers.authorization,
       process.env.SECRET as string
