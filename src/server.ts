@@ -21,6 +21,10 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.get('/', (req, res) => {
+  res.send('Hey this is my API running 🥳');
+});
+
 app.use(cors());
 
 app.use(express.json());
